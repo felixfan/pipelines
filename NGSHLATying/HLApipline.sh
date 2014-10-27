@@ -16,6 +16,9 @@
 ### qsub run1.txt
 ### qsub run2.txt
 ### ...
+### after run razers3, copy all sam file to local ubuntu
+### cd $FQDIR
+### scp yanhui@statgenpro.psychiatry.hku.hk:/home/yanhui/ngs/*.sam .
 #################################################################
 
 ###################### tools installed ##########################
@@ -27,21 +30,68 @@
 ### OptiType version 1.0
 ###################### set directory ############################
 ### !!! change this part !!! ###
-OptiTypeDIR="/home/fan/optiType"         # this is the directory contains OptiType pipeline
-DATADIR="/home/fan/ADBWA"                # this directory contains a directory named "bam" contains all bam and bai file, all temporary dir will be created under this dir
+OptiTypeDIR="/home/fan/optiType"     # this is the directory contains OptiType pipeline
+BAMDIR="/home/fan/ADBWA/bam"   # this directory must be named "bam" and contains all bam and bai file 
+DATADIR="/home/fan/ADBWA"      # all temporary dir will be created under this dir
+OUTDIR="/home/fan/optiType/AD2014"  # final HLA typing results
 ############### do not need to change this part #################
-REF="$OptiTypeDIR/data/hla_reference_dna.fasta"
-BAMDIR="$DATADIR/bam"
-TEMPDIR="$DATADIR/tempdir"
-FQDIR="$DATADIR/fastq"
-mkdir $TEMPDIR
-mkdir $FQDIR
+REF="$OptiTypeDIR/data/hla_reference_dna.fasta"        # reference sequence
+TEMPDIR="$DATADIR/tempdir"                             # chr6 bam files, sorted chr6 bam files
+FQDIR="$DATADIR/fastq"                                 # paired-end fastq files
+SAMDIR="$DATADIR/sam"                                  # razers3 output sam files
+FFQDIR="$DATADIR/fishedFq"                             # fished fastq files, input of OptiType
+#################################################################
+if [ ! -d "$TEMPDIR" ]
+then
+	mkdir $TEMPDIR
+fi
+###
+if [ ! -d "$FQDIR" ]
+then
+	mkdir $FQDIR
+fi
+###
+if [ ! -d "$SAMDIR" ]
+then
+	mkdir $SAMDIR
+fi
+###
+if [ ! -d "$FFQDIR" ]
+then
+	mkdir $FFQDIR
+fi
+#################################################################
+### 1
+if [ -e batch1ExtractChr6.sh ]
+then
+	rm batch1ExtractChr6.sh
+fi
+### 2
+if [ -e batch2Sort.sh ]
+then
+	rm batch2Sort.sh
+fi
+### 3
+if [ -e batch3BAM2Fastq.sh ]
+then
+	rm batch3BAM2Fastq.sh
+fi
+### 4
+if [ -e batch4Sam2fastq.sh ]
+then
+	rm batch4Sam2fastq.sh
+fi
+### 5
+if [ -e batch5OptiType.sh ]
+then
+	rm batch5OptiType.sh
+fi
 ######################### BEGIN #################################
 ### 0 Get individual id (first part of the file name) and number of individuals
 ls $BAMDIR/*.bam > fileN.txt
 sed -i 's/\./ /' fileN.txt
 awk '{print $1}' fileN.txt > fileN2.txt
-sed 's/fastq\// /' fileN2.txt > fileN.txt
+sed 's/bam\// /' fileN2.txt > fileN.txt
 awk '{print $2}' fileN.txt > fileN3.txt
 IFS=$'\n' read -d '' -r -a lines < fileN2.txt   # dir and file names without extension
 IFS=$'\n' read -d '' -r -a ids < fileN3.txt     # individual ids
@@ -53,7 +103,7 @@ let m=$n-1
 ### !!! in this analysis "6" instead of "chr6" was used, it depends on the tag in your bam file !!!
 for i in $(seq 0 $m)
 do
-	echo "samtools view -h -b $BAMDIR/${ids[$i]}.bam 6 > $TEMPDIR/${ids[$i]}.chr6.bam" >> batch1ExtractChr6.sh
+	echo "samtools view -h -b ${lines[$i]}.bam 6 > $TEMPDIR/${ids[$i]}.chr6.bam" >> batch1ExtractChr6.sh
 done
 
 ### 2 sort bam by read name
@@ -74,21 +124,44 @@ do
 done
 
 ### 4 filtering reads using razers3
-### submit jobs to server
-echo '#!/bin/bash' >> qsub.txt
-echo '#PBS -l nodes=1' >> qsub.txt               # !!! require one node
-echo '#PBS -l walltime=168:00:00' >> qsub.txt    # !!! max time: 168hrs !!! reduce number of individuals for each sumbit, or it will be killed after 168 hrs
-echo '#PBS -m abe' >> qsub.txt                   # enable email notify
-echo '#PBS -q default' >> qsub.txt               # Queue name "default"
-echo '#PBS -N anyName' >> qsub.txt               # name of the job
-echo 'cd $PBS_O_WORKDIR' >> qsub.txt             # change to the dir where you submit your job
+### submit jobs to server:
+### qsub qsub.xxxx.txt
+### each qsub.xxxx.txt is for one individual
 for i in $(seq 0 $m)
 do
-	echo "./razers3 -i 90 -m 1 -dr 0 -o ./${ids[$i]}.chr6.end1.fished.sam ./hla_reference_dna.fasta ./${ids[$i]}.chr6.end1.fastq" >> qsub.txt
-	echo "./razers3 -i 90 -m 1 -dr 0 -o ./${ids[$i]}.chr6.end2.fished.sam ./hla_reference_dna.fasta ./${ids[$i]}.chr6.end2.fastq" >> qsub.txt
+	echo '#!/bin/bash' >> qsub.${ids[$i]}.txt
+	echo '#PBS -l nodes=1' >> qsub.${ids[$i]}.txt             # !!! require one node
+	echo '#PBS -l walltime=168:00:00' >> qsub.${ids[$i]}.txt  # !!! max time: 168hrs !!! 
+	echo '#PBS -m abe' >> qsub.${ids[$i]}.txt                 # enable email notify
+	echo '#PBS -q default' >> qsub.${ids[$i]}.txt             # Queue name "default"
+	echo '#PBS -N '${ids[$i]} >> qsub.${ids[$i]}.txt             # name of the job
+	echo 'cd $PBS_O_WORKDIR' >> qsub.${ids[$i]}.txt           # change to the dir where you submit your job
+	echo "./razers3 -i 90 -m 1 -dr 0 -o ./${ids[$i]}.chr6.end1.fished.sam ./hla_reference_dna.fasta ./${ids[$i]}.chr6.end1.fastq" >> qsub.${ids[$i]}.txt
+	echo "./razers3 -i 90 -m 1 -dr 0 -o ./${ids[$i]}.chr6.end2.fished.sam ./hla_reference_dna.fasta ./${ids[$i]}.chr6.end2.fastq" >> qsub.${ids[$i]}.txt	
 done
 
+### 5 convert sam to fastq
+### convert the sam to bam, then bam to fastq
+for i in $(seq 0 $m)
+do
+	echo "samtools view -Sb $SAMDIR/${ids[$i]}.chr6.end1.fished.sam > $SAMDIR/${ids[$i]}.chr6.end1.temp.bam" >> batch4Sam2fastq.sh
+	echo "samtools view -Sb $SAMDIR/${ids[$i]}.chr6.end2.fished.sam > $SAMDIR/${ids[$i]}.chr6.end2.temp.bam" >> batch4Sam2fastq.sh
+	echo "bedtools bamtofastq -i $SAMDIR/${ids[$i]}.chr6.end1.temp.bam -fq $FFQDIR/${ids[$i]}.end1.fished.fastq" >> batch4Sam2fastq.sh
+	echo "bedtools bamtofastq -i $SAMDIR/${ids[$i]}.chr6.end2.temp.bam -fq $FFQDIR/${ids[$i]}.end2.fished.fastq" >> batch4Sam2fastq.sh
+done
 
+### 6 HLA typing using OptiType
+### copy batch5OptiType.sh to the directory of OptiType and run it from there
+for i in $(seq 0 $m)
+do
+	if [ ! -d "$OUTDIR/${ids[$i]}" ]
+	then
+		mkdir $OUTDIR/${ids[$i]}
+	fi
+	echo "python OptiTypePipeline.py -i $FFQDIR/${ids[$i]}.end1.fished.fastq $FFQDIR/${ids[$i]}.end2.fished.fastq -d -v -o $OUTDIR/${ids[$i]}" >> batch5OptiType.sh
+done 
 
+### CLEAR 
+rm fileN*.txt
 
 
