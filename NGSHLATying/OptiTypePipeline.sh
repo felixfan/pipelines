@@ -7,8 +7,24 @@
 
 ### !!! before use it, check and modify all parts with "!!!"
 
+############### install python modules and other tolls ##########
+### https://github.com/felixfan/OptiType
+### sudo pip install biopython
+### sudo pip install Coopr
+### sudo pip install matplotlib
+### sudo pip install pandas
+### Install hdf5 (http://www.hdfgroup.org/HDF5/)
+### Install pyTables (http://www.pytables.org) 
+### Install RazerS (http://www.seqan.de/projects/razers/)
+### Install glpk: http://ftp.gnu.org/gnu/glpk/
 #################### how to use it ##############################
-### after run this script, copy all fastq file and run{1,10}.txt to the cluster server to run razers3
+### step 1
+### bash OptiTypePipeline.sh
+### bash batch1ExtractChr6.sh
+### bash batch2Sort.sh
+### bash batch3BAM2Fastq.sh
+### step 2
+### after run step 1, copy all fastq file and run{1,10}.txt to the cluster server to run razers3
 ### cd $FQDIR
 ### scp *.fastq yanhui@statgenpro.psychiatry.hku.hk:/home/yanhui/ngs/
 ### scp run*.txt yanhui@statgenpro.psychiatry.hku.hk:/home/yanhui/ngs/
@@ -16,9 +32,13 @@
 ### qsub run1.txt
 ### qsub run2.txt
 ### ...
+### step 3
 ### after run razers3, copy all sam file to local ubuntu
 ### cd $FQDIR
 ### scp yanhui@statgenpro.psychiatry.hku.hk:/home/yanhui/ngs/*.sam .
+### bash batch4Sam2fastq.sh
+### copy batch5OptiType.sh to the directory of OptiType and run it from there
+### bash batch5OptiType.sh
 #################################################################
 
 ###################### tools installed ##########################
