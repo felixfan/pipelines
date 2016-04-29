@@ -50,17 +50,17 @@ esac
 done
 
 ### extract SNPs only
-awk '$4~/^[ACGT]$/ && $5~/^[ACGT]$/ {print $2}' > tmp.snps
+awk '$4~/^[ACGT]$/ && $5~/^[ACGT]$/ {print $2}' ${GENOTYPE} > tmp.snps
 gtool -S --g ${GENOTYPE} --s ${SAMPLE} --inclusion tmp.snps --og tmp.gens
 
 ### convert gen to ped
 gtool -G --g tmp.gens --s ${SAMPLE} --ped tmp.ped --map tmp.map --phenotype ${PHENOTYPE} --sex ${SEX} --chr ${CHR} --threshold ${THRESHOLD} --snp
-rm tmp.*
 
 ### gtool code missing as 'N',  => plink code missing as '0'
 python recodeMissing.py tmp.ped tmp2.ped
 mv tmp2.ped tmp.ped
 
 ### update ID  e.g. rs123:2277777:C:T => rs123; 1:222333:G:A => 1:222333
-python updateName.py tmp2.ped tmp.name.txt
-plink --file tmp --update-map tmp.name.txt --update-name --make-bed --out ${OUT}
+python updateName.py tmp.ped tmp.name.txt
+plink --file tmp --update-map tmp.name.txt --update-name --make-bed --out ${OUTPUT}
+rm tmp*
