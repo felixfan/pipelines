@@ -1,0 +1,24 @@
+### LiftOver from UCSC (http://genome.ucsc.edu/cgi-bin/hgLiftOver)
+### e.g., hg18 -> hg19
+
+#### by Yanhui Fan felixfanyh@gmail.com
+#### last revised on 29 April 2016
+
+INPUT="input"
+OUTPUT="output"
+
+### step 1 prepare input
+awk '{print "chr"$1,$4-1,$4,$2}' ${INPUT}.bim > input.hg18.bed
+
+### step 2 
+### !!! manually upload input.hg18.bed and download success positions to hg19.bed and failed positions to hg19.err
+### !!! alternatively, download the data and software from UCSC, run it automatically
+grep -v '#' hg19.err | awk '{print $4}' > hg19.rm.snps
+awk '{print $4,$1}' hg19.bed | sed 's/chr//' > hg19.chr
+awk '{print $4,$3}' hg19.bed > hg19.phypos
+
+### step 3 remove and update
+plink --bfile ${INPUT} --exclude hg19.rm.snps --make-bed --out tmp1
+plink --bfile tmp1 --update-map hg19.phypos --make-bed --out tmp2
+plink --bfile tmp2 --update-map hg19.chr --update-chr --make-bed --out ${OUTPUT}.hg19
+rm tmp*
