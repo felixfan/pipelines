@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#### pipeline for WGS variant calling
+#### pipeline for WGS variant calling - part 1
 #### use the best practices for variant calling with GATK
-#### software used: bwa, samtools, picard
+#### software used: bwa, samtools, picard, GATK
 #### total seven steps:
 #### step 1 Download reference files [--download]
 #### step 2 create the index and dictionary of the reference genome [--indexing]
