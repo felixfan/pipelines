@@ -319,7 +319,8 @@ fi
 if [ $INDEX == 'true' ]; then
     bwa index ucsc.hg19.fasta
     samtools faidx ucsc.hg19.fasta
-    java -jar CreateSequenceDictionary.jar REFERENCE=ucsc.hg19.fasta OUTPUT=ucsc.hg19.dict
+    #java -jar CreateSequenceDictionary.jar REFERENCE=ucsc.hg19.fasta OUTPUT=ucsc.hg19.dict
+    java -jar picard.jar CreateSequenceDictionary R=ucsc.hg19.fasta O=ucsc.hg19.dict # picard 2.6
 fi
 ################################################################################
 #### step 3 mapping with bwa mem
