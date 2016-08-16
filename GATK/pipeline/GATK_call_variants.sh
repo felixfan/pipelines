@@ -337,15 +337,18 @@ fi
 #### sort sam and output as bam
 #### marking duplicates and index the bam
 if [ $SORT == 'true' ]; then
-    java -jar SortSam.jar INPUT=$OUT.align.sam OUTPUT=$OUT.sorted.bam SORT_ORDER=coordinate
+    #java -jar SortSam.jar INPUT=$OUT.align.sam OUTPUT=$OUT.sorted.bam SORT_ORDER=coordinate
+    java -jar picard.jar SortSam I=$OUT.align.sam O=$OUT.sorted.bam SORT_ORDER=coordinate
     if [ $DEL == 'true' ]; then
         rm $OUT.align.sam
     fi
-    java -jar MarkDuplicates.jar INPUT=$OUT.sorted.bam OUTPUT=$OUT.dedup.bam METRICS_FILE=$OUT.metrics.txt
+    #java -jar MarkDuplicates.jar INPUT=$OUT.sorted.bam OUTPUT=$OUT.dedup.bam METRICS_FILE=$OUT.metrics.txt
+    java -jar picard.jar MarkDuplicates I=$OUT.sorted.bam O=$OUT.dedup.bam M=$OUT.metrics.txt
     if [ $DEL == 'true' ]; then
         rm $OUT.sorted.bam
     fi
-    java -jar BuildBamIndex.jar INPUT=$OUT.dedup.bam
+    #java -jar BuildBamIndex.jar INPUT=$OUT.dedup.bam
+    java -jar picard.jar BuildBamIndex I=$OUT.dedup.bam
 fi
 ################################################################################
 #### step 5 Local realignment around indels
