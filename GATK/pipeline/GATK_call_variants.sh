@@ -124,7 +124,7 @@ done
 #### check arguments
 #### check which steps to run
 flag=false
-if [ $DEFAULT ]; then
+if [ "$DEFAULT" = true ]; then
     DOWNLOAD=false
     INDEX=false
     MAP=true
@@ -135,7 +135,7 @@ if [ $DEFAULT ]; then
     HTC=true
     DEL=true
     flag=true
-elif [ $FULL ]; then
+elif [ "$FULL" = true ]; then
     DOWNLOAD=true
     INDEX=true
     MAP=true
@@ -146,7 +146,7 @@ elif [ $FULL ]; then
     HTC=true
     DEL=true
     flag=true
-elif [ $FAST ]; then
+elif [ "$FAST" = true ]; then
     DOWNLOAD=false
     INDEX=false
     MAP=true
@@ -157,57 +157,50 @@ elif [ $FAST ]; then
     HTC=true
     DEL=true
     flag=true
-elif [ $DOWNLOAD ]; then
-    DOWNLOAD=true
-elif [ $INDEX ]; then
-    INDEX=true
-elif [ $MAP ]; then
-    MAP=true
-elif [ $SORT ]; then
-    SORT=true
-elif [ $REALIGN ]; then
-    REALIGN=true
-elif [ $BQSR ]; then
-    BQSR=true
-elif [ $PLOT ]; then
-    PLOT=true
-elif [ $HTC ]; then
-    HTC=true
+elif [ "$DOWNLOAD" = true ] || [ "$INDEX" = true ] || [ "$MAP" = true ] || [ "$SORT" = true ] || [ "$REALIGN" = true ] || [ "$BQSR" = true ] || [ "$PLOT" = true ] || [ "$HTC" = true ]; then
+    flag=false
 else
     echo 'nothing to do, exit now'
     exit 2
 fi
-if [ $flag != true ]; then
-    if [ ! $DOWNLOAD ]; then
+# user specified steps
+if [ ! "$flag" = true ]; then
+    if [ ! "$DOWNLOAD" = true ]; then
         DOWNLOAD=false
     fi
-    if [ ! $INDEX ]; then
+    if [ ! "$INDEX" = true ]; then
         INDEX=false
     fi
-    if [ ! $MAP ]; then
+    if [ ! "$MAP" = true ]; then
         MAP=false
     fi
-    if [ ! $SORT ]; then
+    if [ ! "$SORT" = true ]; then
         SORT=false
     fi
-    if [ ! $REALIGN ]; then
+    if [ ! "$REALIGN" = true ]; then
         REALIGN=false
     fi
-    if [ ! $BQSR ]; then
+    if [ ! "$BQSR" = true ]; then
         BQSR=false
     fi
-    if [ ! $PLOT ]; then
+    if [ ! "$PLOT" = true ]; then
         PLOT=false
     fi
-    if [ ! $HTC ]; then
+    if [ ! "$HTC" = true ]; then
         HTC=false
     fi
-    if [ ! $DEL ]; then
+    if [ ! "$DEL" = true ]; then
         DEL=false
     fi
 fi
 #### check input files
-if [ $MAP = true ] || [ $SORT = true ] || [ $REALIGN = true ] || [ $BQSR = true ] || [ $PLOT = true ] || [ $HTC = true ]; then
+if [ "$INDEX" = true ] || [ "$MAP" = true ] || [ "$REALIGN" = true ] || [ "$BQSR" = true ] || [ "$PLOT" = true ] || [ "$HTC" = true ]; then
+    if [ ! $REF ]; then
+        echo 'missing the reference genome fasta file!'
+        exit 1
+    fi
+fi
+if [ "$MAP" = true ]; then
     if [ ! $FQ1 ]; then
         echo 'missing the first fastq file!'
         exit 1
@@ -216,14 +209,14 @@ if [ $MAP = true ] || [ $SORT = true ] || [ $REALIGN = true ] || [ $BQSR = true 
         echo 'missing the second fastq file!'
         exit 1
     fi
+fi
+if [ "$MAP" = true ] || [ "$SORT" = true ] || [ "$REALIGN" = true ] || [ "$BQSR" = true ] || [ "$PLOT" = true ] || [ "$HTC" = true ]; then
     if [ ! $SAMPLE ]; then
         echo 'missing the sample ID!'
         exit 1
     fi
-    if [ ! $REF ]; then
-        echo 'missing the reference genome fasta file!'
-        exit 1
-    fi
+fi
+if [ "$REALIGN" = true ] || [ "$BQSR" = true ] || [ "$PLOT" = true ]; then
     if [ ! $KG ]; then
         echo 'missing the 1000G indels file'
         exit 1
@@ -232,51 +225,68 @@ if [ $MAP = true ] || [ $SORT = true ] || [ $REALIGN = true ] || [ $BQSR = true 
         echo 'missing the gold standard indels file'
         exit 1
     fi
+fi
+if [ "$BQSR" = true ] || [ "$PLOT" = true ]; then
     if [ ! $DBSNP ]; then
         echo 'missing the dbSNPs file'
         exit 1
     fi
 fi
+### DEFAULT CORE TO BE USED
 if [ ! $CORE ]; then
     CORE=2
 fi
 #### effected options
 echo "\n\tOptions in effect:"
-if [ $DOWNLOAD = true ]; then
+if [ "$DOWNLOAD" = true ]; then
     echo "\t--download"
 fi
-if [ $INDEX = true ]; then
+if [ "$INDEX" = true ]; then
     echo "\t--indexing"
 fi
-if [ $MAP = true ]; then
+if [ "$MAP" = true ]; then
     echo "\t--mapping"
 fi
-if [ $SORT = true ]; then
+if [ "$SORT" = true ]; then
     echo "\t--sort"
 fi
-if [ $REALIGN = true ]; then
+if [ "$REALIGN" = true ]; then
     echo "\t--realign"
 fi
-if [ $BQSR = true ]; then
+if [ "$BQSR" = true ]; then
     echo "\t--bqsr"
 fi
-if [ $PLOT = true ]; then
+if [ "$PLOT" = true ]; then
     echo "\t--plot"
 fi
-if [ $HTC = true ]; then
+if [ "$HTC" = true ]; then
     echo "\t--haplotypeCaller"
 fi
-if [ $DEL = true ]; then
+if [ "$DEL" = true ]; then
     echo "\t--rmtmp"
 fi
+
 echo "\t--nt=$CORE"
-if [ $MAP = true ] || [ $SORT = true ] || [ $REALIGN = true ] || [ $BQSR = true ] || [ $PLOT = true ] || [ $HTC = true ]; then
+
+if [ $FQ1 ]; then
     echo "\t--fq1=$FQ1"
+fi
+if [ $FQ2 ]; then
     echo "\t--fq2=$FQ2"
+fi
+if [ $SAMPLE ]; then
     echo "\t--sample=$SAMPLE"
+fi
+if [ $REF ]; then    
     echo "\t--ref=$REF"
+fi
+if [ $KG ]; then   
     echo "\t--kg=$KG"
+fi
+if [ $GOLD ]; then
     echo "\t--gold=$GOLD"
+fi
+if [ $DBSNP ]; then
     echo "\t--dbsnp=$DBSNP"
 fi
 echo
@@ -294,13 +304,13 @@ RG="@RG\tID:${ID}\tSM:${SM}\tPL:${PL}\tLB:${LB}"
 #### out
 OUT=$SAMPLE
 
-# exit
+#exit 9
 
 ################################################################################
 #### step 1 Download reference files
 #### download bundle data from gatk and index
 #### down load data from GATK ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-if [ $DOWNLOAD == 'true' ]; then
+if [ "$DOWNLOAD" = true ]; then
     wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19/ucsc.hg19.fasta.gz
     wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19/dbsnp_138.hg19.vcf.gz
     wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz
@@ -316,7 +326,7 @@ if [ $DOWNLOAD == 'true' ]; then
 fi
 ################################################################################
 #### step 2 create the index and dictionary of the reference genome
-if [ $INDEX == 'true' ]; then
+if [ "$INDEX" = true ]; then
     bwa index ucsc.hg19.fasta
     samtools faidx ucsc.hg19.fasta
     #java -jar CreateSequenceDictionary.jar REFERENCE=ucsc.hg19.fasta OUTPUT=ucsc.hg19.dict
@@ -326,9 +336,9 @@ fi
 #### step 3 mapping with bwa mem
 #### paired-end alignment
 #### ID:<unique id> LB:<library name> SM:<sample name> PL:<platform name>
-if [ $MAP == 'true' ]; then
+if [ "$MAP" = true ]; then
     bwa mem -M -t $CORE -R $RG $REF $FQ1 $FQ2 > $OUT.align.sam
-    if [ $DEL == 'true' ]; then
+    if [ "$DEL" = true ]; then
         rm $FQ1 $FQ2
     fi
 fi
@@ -336,15 +346,15 @@ fi
 #### step 4  sorting and marking duplicates
 #### sort sam and output as bam
 #### marking duplicates and index the bam
-if [ $SORT == 'true' ]; then
+if [ "$SORT" = true ]; then
     #java -jar SortSam.jar INPUT=$OUT.align.sam OUTPUT=$OUT.sorted.bam SORT_ORDER=coordinate
     java -jar picard.jar SortSam I=$OUT.align.sam O=$OUT.sorted.bam SORT_ORDER=coordinate
-    if [ $DEL == 'true' ]; then
+    if [ "$DEL" = true ]; then
         rm $OUT.align.sam
     fi
     #java -jar MarkDuplicates.jar INPUT=$OUT.sorted.bam OUTPUT=$OUT.dedup.bam METRICS_FILE=$OUT.metrics.txt
     java -jar picard.jar MarkDuplicates I=$OUT.sorted.bam O=$OUT.dedup.bam M=$OUT.metrics.txt
-    if [ $DEL == 'true' ]; then
+    if [ "$DEL" = true ]; then
         rm $OUT.sorted.bam
     fi
     #java -jar BuildBamIndex.jar INPUT=$OUT.dedup.bam
@@ -354,10 +364,10 @@ fi
 #### step 5 Local realignment around indels
 #### create a target list of intervals to be realigned
 #### perform realignment
-if [ $REALIGN == 'true' ]; then
+if [ "$REALIGN" = true ]; then
     java -jar GenomeAnalysisTK.jar -nt $CORE -T RealignerTargetCreator -R $REF -I $OUT.dedup.bam -known $GOLD -known $KG -o $OUT.intervals
     java -jar GenomeAnalysisTK.jar -T IndelRealigner -R $REF -targetIntervals $OUT.intervals -I $OUT.dedup.bam -known $GOLD -known $KG -o $OUT.realigned.bam
-    if [ $DEL == 'true' ]; then
+    if [ "$DEL" = true ]; then
         rm $OUT.dedup.bam
     fi
 fi
@@ -365,23 +375,23 @@ fi
 #### step 6 Base quality score recalibration (BQSR)
 #### analyze patterns of covariation and builds recalibration model
 #### apply the recalibration
-if [ $BQSR == 'true' ]; then
+if [ "$BQSR" = true ]; then
     java -jar GenomeAnalysisTK.jar -T BaseRecalibrator -R $REF -I $OUT.realigned.bam -knownSites $DBSNP -knownSites $GOLD -knownSites $KG -o $OUT.recal.grp
     java -jar GenomeAnalysisTK.jar -T PrintReads -R $REF -I $OUT.realigned.bam -BQSR $OUT.recal.grp -o $OUT.recal.bam
 fi
 #### second pass evaluateds what the data looks like after recalibration
 #### makes plots based on before/after recalibration tables
-if [ $PLOT == 'true' ]; then
+if [ "$PLOT" = true ]; then
     java -jar GenomeAnalysisTK.jar -T BaseRecalibrator -R $REF -I $OUT.realigned.bam -knownSites $DBSNP -knownSites $GOLD -knownSites $KG -BQSR $OUT.recal.grp -o $OUT.post.recal.grp
     java -jar GenomeAnalysisTK.jar -T AnalyzeCovariates -R $REF -before $OUT.recal.grp -after $OUT.post.recal.grp -plots $OUT.recal.plots.pdf
-    if [ $DEL == 'true' ]; then
+    if [ "$DEL" = true ]; then
         rm $OUT.realigned.bam
     fi
 fi
 ################################################################################
 #### step 7 Identify  potential variants in each sample (HaplotypeCaller)
 #### output records for all sites in gVCF format
-if [ $HTC == 'true' ]; then
+if [ "$HTC" = true ]; then
     java -jar -Xmx32g GenomeAnalysisTK.jar -nct $CORE -T HaplotypeCaller -R $REF -I $OUT.recal.bam -o $OUT.g.vcf -ERC GVCF
 fi
 ################################################################################
