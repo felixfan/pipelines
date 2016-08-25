@@ -17,7 +17,6 @@ def call_hla_types(iid, doc):
                   if n == 1:
                         line = line.strip()
                         ws = line.split()
-                        print ws[1]
                         if float(ws[1]) < doc:
                               ans.append('NA')
                               ans.append('NA')
@@ -33,9 +32,8 @@ def call_hla_types(iid, doc):
                                     ans.append(g1)
                                     ans.append(g1)
                               else:
-                                    # heter?????????????
                                     ans.append(g1)
-                                    ans.append(ws[0])
+                                    ans.append('NA')
                         else:
                               if c1 >= 2.0 * float(ws[1]):
                                     ans.append(g1)
