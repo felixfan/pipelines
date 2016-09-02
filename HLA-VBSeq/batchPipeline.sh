@@ -13,7 +13,7 @@ do
     if [[ ! ${finished[*]} =~ $i ]]; then
         fq1=$i"_1.fastq.gz"
         fq2=$i"_2.fastq.gz"
-        if [ -f "$fq1" ] && [ -f "$fq2" ] && [ ! $i = '1094' ]; then
+        if [ -f "$fq1" ] && [ -f "$fq2" ]; then
             bash HLA_VBSeq_Fastq.sh $i $fq1 $fq2
             # echo $i
         fi
