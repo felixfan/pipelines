@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #### pipeline for WGS variant calling - part 1
-#### use the best practices for variant calling with GATK
+#### use the best practices for variant calling with GATK 2.8
 #### software used: bwa, samtools, picard, GATK
 #### total seven steps:
 #### step 1 Download reference files [--download]
@@ -13,11 +13,11 @@
 #### step 7 Identify  potential variants in each sample (HaplotypeCaller) [--haplotypeCaller]
 #### how to run:
 #### example 1: run steps 1-7 with plot
-#### sh GATK_call_variants.sh --full --fq1=588_R1.fastq.gz --fq2=7588_R2.fastq.gz --sample=7588 --ref=ucsc.hg19.fasta --kg=1000G_phase1.indels.hg19.sites.vcf --gold=Mills_and_1000G_gold_standard.indels.hg19.sites.vcf --dbsnp=dbsnp_138.hg19.vcf
+#### sh GATK_call_variants.sh --full --fq1=7588_R1.fastq.gz --fq2=7588_R2.fastq.gz --sample=7588 --ref=ucsc.hg19.fasta --kg=1000G_phase1.indels.hg19.sites.vcf --gold=Mills_and_1000G_gold_standard.indels.hg19.sites.vcf --dbsnp=dbsnp_138.hg19.vcf
 #### example 2: run steps 3 - 7 with plot
-#### sh GATK_call_variants.sh --default --fq1=588_R1.fastq.gz --fq2=7588_R2.fastq.gz --sample=7588 --ref=ucsc.hg19.fasta --kg=1000G_phase1.indels.hg19.sites.vcf --gold=Mills_and_1000G_gold_standard.indels.hg19.sites.vcf --dbsnp=dbsnp_138.hg19.vcf
+#### sh GATK_call_variants.sh --default --fq1=7588_R1.fastq.gz --fq2=7588_R2.fastq.gz --sample=7588 --ref=ucsc.hg19.fasta --kg=1000G_phase1.indels.hg19.sites.vcf --gold=Mills_and_1000G_gold_standard.indels.hg19.sites.vcf --dbsnp=dbsnp_138.hg19.vcf
 #### example 3: run steps 3 - 7 without plot
-#### sh GATK_call_variants.sh --fast --fq1=588_R1.fastq.gz --fq2=7588_R2.fastq.gz --sample=7588 --ref=ucsc.hg19.fasta --kg=1000G_phase1.indels.hg19.sites.vcf --gold=Mills_and_1000G_gold_standard.indels.hg19.sites.vcf --dbsnp=dbsnp_138.hg19.vcf
+#### sh GATK_call_variants.sh --fast --fq1=7588_R1.fastq.gz --fq2=7588_R2.fastq.gz --sample=7588 --ref=ucsc.hg19.fasta --kg=1000G_phase1.indels.hg19.sites.vcf --gold=Mills_and_1000G_gold_standard.indels.hg19.sites.vcf --dbsnp=dbsnp_138.hg19.vcf
 #### example 4: only run steps 1 - 2
 #### sh GATK_call_variants.sh --download --indexing
 #### Default setting:
@@ -338,9 +338,9 @@ fi
 #### ID:<unique id> LB:<library name> SM:<sample name> PL:<platform name>
 if [ "$MAP" = true ]; then
     bwa mem -M -t $CORE -R $RG $REF $FQ1 $FQ2 > $OUT.align.sam
-    if [ "$DEL" = true ]; then
-        rm $FQ1 $FQ2
-    fi
+    # if [ "$DEL" = true ]; then
+    #     rm $FQ1 $FQ2
+    # fi
 fi
 ################################################################################
 #### step 4  sorting and marking duplicates
