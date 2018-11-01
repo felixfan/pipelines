@@ -38,3 +38,5 @@ do
 done < "$GVCFS"
 
 echo $comms
+
+$comms
